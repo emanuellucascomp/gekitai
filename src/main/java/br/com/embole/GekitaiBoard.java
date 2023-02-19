@@ -18,38 +18,38 @@ import javafx.scene.text.Font;
  * created before the Board constructor is called, since
  * the constructor references the buttons (in the call to doNewGame()).
  */
-public class CheckersBoard extends Canvas {
+public class GekitaiBoard extends Canvas {
 
-    CheckersData board; // The data for the checkers board is kept here.
+    private final GekitaiData board; // The data for the checkers board is kept here.
     //    This board is also responsible for generating
     //    lists of legal moves.
 
-    boolean gameInProgress; // Is a game currently in progress?
+    private boolean gameInProgress; // Is a game currently in progress?
 
     /* The next three variables are valid only when the game is in progress. */
 
-    int currentPlayer;      // Whose turn is it now?  The possible values
+    private int currentPlayer;      // Whose turn is it now?  The possible values
     //    are CheckersData.RED and CheckersData.BLACK.
 
-    int selectedRow, selectedCol;   // If the current player has selected a piece to
+    private int selectedRow, selectedCol;   // If the current player has selected a piece to
     //     move, these give the row and column
     //     containing that piece.  If no piece is
     //     yet selected, then selectedRow is -1.
 
-    CheckersMove[] legalMoves;  // An array containing the legal moves for the
+    private GekitaiMove[] legalMoves;  // An array containing the legal moves for the
     //   current player.
-    Label message;
-    Button resignButton;
-    Button newGameButton;
+    private final Label message;
+    private final Button resignButton;
+    private final Button newGameButton;
 
     /**
      * Constructor.  Creates a CheckersData to represent the
      * contents of the checkerboard, and calls doNewGame to
      * start the first game.
      */
-    CheckersBoard(Label message, Button newGameButton, Button resignButton) {
-        super(324,324);  // canvas is 324-by-324 pixels
-        this.board = new CheckersData();
+    GekitaiBoard(Label message, Button newGameButton, Button resignButton) {
+        super(243,243);  // canvas is 324-by-324 pixels
+        this.board = new GekitaiData();
         this.message = message;
         this.resignButton = resignButton;
         this.newGameButton = newGameButton;
@@ -62,14 +62,14 @@ public class CheckersBoard extends Canvas {
      * is set up in the start() method in the main class.
      */
     void doNewGame() {
-        if (gameInProgress == true) {
+        if (gameInProgress) {
             // This should not be possible, but it doesn't hurt to check.
             message.setText("Finish the current game first!");
             return;
         }
         board.setUpGame();   // Set up the pieces.
-        currentPlayer = CheckersData.RED;   // RED moves first.
-        legalMoves = board.getLegalMoves(CheckersData.RED);  // Get RED's legal moves.
+        currentPlayer = GekitaiData.RED;   // RED moves first.
+        legalMoves = board.getLegalMoves(GekitaiData.RED);  // Get RED's legal moves.
         selectedRow = -1;   // RED has not yet selected a piece to move.
         message.setText("Red:  Make your move.");
         gameInProgress = true;
@@ -84,11 +84,11 @@ public class CheckersBoard extends Canvas {
      * set up in the start() method in the main class.
      */
     void doResign() {
-        if (gameInProgress == false) {  // Should be impossible.
+        if (!gameInProgress) {  // Should be impossible.
             message.setText("There is no game in progress!");
             return;
         }
-        if (currentPlayer == CheckersData.RED)
+        if (currentPlayer == GekitaiData.RED)
             gameOver("RED resigns.  BLACK wins.");
         else
             gameOver("BLACK resigns.  RED wins.");
@@ -119,18 +119,18 @@ public class CheckersBoard extends Canvas {
              might change a previous selection.)  Reset the message, in
              case it was previously displaying an error message. */
 
-        for (int i = 0; i < legalMoves.length; i++)
-            if (legalMoves[i].fromRow == row && legalMoves[i].fromCol == col) {
+        for (GekitaiMove legalMove : legalMoves){
+            if (legalMove.getFromRow() == row && legalMove.getFromCol() == col) {
                 selectedRow = row;
                 selectedCol = col;
-                if (currentPlayer == CheckersData.RED)
+                if (currentPlayer == GekitaiData.RED)
                     message.setText("RED:  Make your move.");
                 else
                     message.setText("BLACK:  Make your move.");
                 drawBoard();
                 return;
             }
-
+        }
             /* If no piece has been selected to be moved, the user must first
              select a piece.  Show an error message and return. */
 
@@ -142,10 +142,10 @@ public class CheckersBoard extends Canvas {
             /* If the user clicked on a square where the selected piece can be
              legally moved, then make the move and return. */
 
-        for (int i = 0; i < legalMoves.length; i++)
-            if (legalMoves[i].fromRow == selectedRow && legalMoves[i].fromCol == selectedCol
-                    && legalMoves[i].toRow == row && legalMoves[i].toCol == col) {
-                doMakeMove(legalMoves[i]);
+        for (GekitaiMove legalMove : legalMoves)
+            if (legalMove.getFromRow() == selectedRow && legalMove.getFromCol() == selectedCol
+                    && legalMove.getToRow() == row && legalMove.getToCol() == col) {
+                doMakeMove(legalMove);
                 return;
             }
 
@@ -162,7 +162,7 @@ public class CheckersBoard extends Canvas {
      * move.  Make the move, and then either end or continue the game
      * appropriately.
      */
-    void doMakeMove(CheckersMove move) {
+    void doMakeMove(GekitaiMove move) {
 
         board.makeMove(move);
 
@@ -173,14 +173,14 @@ public class CheckersBoard extends Canvas {
              */
 
         if (move.isJump()) {
-            legalMoves = board.getLegalJumpsFrom(currentPlayer,move.toRow,move.toCol);
+            legalMoves = board.getLegalJumpsFrom(currentPlayer, move.getToRow(), move.getToCol());
             if (legalMoves != null) {
-                if (currentPlayer == CheckersData.RED)
+                if (currentPlayer == GekitaiData.RED)
                     message.setText("RED:  You must continue jumping.");
                 else
                     message.setText("BLACK:  You must continue jumping.");
-                selectedRow = move.toRow;  // Since only one piece can be moved, select it.
-                selectedCol = move.toCol;
+                selectedRow = move.getToRow();  // Since only one piece can be moved, select it.
+                selectedCol = move.getToCol();
                 drawBoard();
                 return;
             }
@@ -190,8 +190,8 @@ public class CheckersBoard extends Canvas {
              Get that player's legal moves.  If the player has no legal moves,
              then the game ends. */
 
-        if (currentPlayer == CheckersData.RED) {
-            currentPlayer = CheckersData.BLACK;
+        if (currentPlayer == GekitaiData.RED) {
+            currentPlayer = GekitaiData.BLACK;
             legalMoves = board.getLegalMoves(currentPlayer);
             if (legalMoves == null)
                 gameOver("BLACK has no moves.  RED wins.");
@@ -201,7 +201,7 @@ public class CheckersBoard extends Canvas {
                 message.setText("BLACK:  Make your move.");
         }
         else {
-            currentPlayer = CheckersData.RED;
+            currentPlayer = GekitaiData.RED;
             legalMoves = board.getLegalMoves(currentPlayer);
             if (legalMoves == null)
                 gameOver("RED has no moves.  BLACK wins.");
@@ -223,14 +223,14 @@ public class CheckersBoard extends Canvas {
         if (legalMoves != null) {
             boolean sameStartSquare = true;
             for (int i = 1; i < legalMoves.length; i++)
-                if (legalMoves[i].fromRow != legalMoves[0].fromRow
-                        || legalMoves[i].fromCol != legalMoves[0].fromCol) {
+                if (legalMoves[i].getFromRow() != legalMoves[0].getFromRow()
+                        || legalMoves[i].getFromCol() != legalMoves[0].getFromCol()) {
                     sameStartSquare = false;
                     break;
                 }
             if (sameStartSquare) {
-                selectedRow = legalMoves[0].fromRow;
-                selectedCol = legalMoves[0].fromCol;
+                selectedRow = legalMoves[0].getFromRow();
+                selectedCol = legalMoves[0].getFromCol();
             }
         }
 
@@ -251,40 +251,40 @@ public class CheckersBoard extends Canvas {
 
         /* Draw a two-pixel black border around the edges of the canvas. */
 
-        g.setStroke(Color.DARKRED);
+        g.setStroke(Color.LIGHTBLUE);
         g.setLineWidth(2);
         g.strokeRect(1, 1, 322, 322);
 
         /* Draw the squares of the checkerboard and the checkers. */
 
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
+        for (int row = 0; row < 6; row++) {
+            for (int col = 0; col < 6; col++) {
                 if ( row % 2 == col % 2 )
                     g.setFill(Color.LIGHTGRAY);
                 else
                     g.setFill(Color.GRAY);
                 g.fillRect(2 + col*40, 2 + row*40, 40, 40);
-                switch (board.pieceAt(row,col)) {
-                    case CheckersData.RED:
+                switch (board.pieceAt(row, col)) {
+                    case GekitaiData.RED -> {
                         g.setFill(Color.RED);
-                        g.fillOval(8 + col*40, 8 + row*40, 28, 28);
-                        break;
-                    case CheckersData.BLACK:
+                        g.fillOval(8 + col * 40, 8 + row * 40, 28, 28);
+                    }
+                    case GekitaiData.BLACK -> {
                         g.setFill(Color.BLACK);
-                        g.fillOval(8 + col*40, 8 + row*40, 28, 28);
-                        break;
-                    case CheckersData.RED_KING:
+                        g.fillOval(8 + col * 40, 8 + row * 40, 28, 28);
+                    }
+                    case GekitaiData.RED_KING -> {
                         g.setFill(Color.RED);
-                        g.fillOval(8 + col*40, 8 + row*40, 28, 28);
+                        g.fillOval(8 + col * 40, 8 + row * 40, 28, 28);
                         g.setFill(Color.WHITE);
-                        g.fillText("K", 15 + col*40, 29 + row*40);
-                        break;
-                    case CheckersData.BLACK_KING:
+                        g.fillText("K", 15 + col * 40, 29 + row * 40);
+                    }
+                    case GekitaiData.BLACK_KING -> {
                         g.setFill(Color.BLACK);
-                        g.fillOval(8 + col*40, 8 + row*40, 28, 28);
+                        g.fillOval(8 + col * 40, 8 + row * 40, 28, 28);
                         g.setFill(Color.WHITE);
-                        g.fillText("K", 15 + col*40, 29 + row*40);
-                        break;
+                        g.fillText("K", 15 + col * 40, 29 + row * 40);
+                    }
                 }
             }
         }
@@ -296,8 +296,8 @@ public class CheckersBoard extends Canvas {
             /* First, draw a 4-pixel cyan border around the pieces that can be moved. */
             g.setStroke(Color.CYAN);
             g.setLineWidth(4);
-            for (int i = 0; i < legalMoves.length; i++) {
-                g.strokeRect(4 + legalMoves[i].fromCol*40, 4 + legalMoves[i].fromRow*40, 36, 36);
+            for (GekitaiMove legalMove : legalMoves) {
+                g.strokeRect(4 + legalMove.getFromCol() * 40, 4 + legalMove.getFromRow() * 40, 36, 36);
             }
                 /* If a piece is selected for moving (i.e. if selectedRow >= 0), then
                     draw a yellow border around that piece and draw green borders
@@ -308,9 +308,9 @@ public class CheckersBoard extends Canvas {
                 g.strokeRect(4 + selectedCol*40, 4 + selectedRow*40, 36, 36);
                 g.setStroke(Color.LIME);
                 g.setLineWidth(4);
-                for (int i = 0; i < legalMoves.length; i++) {
-                    if (legalMoves[i].fromCol == selectedCol && legalMoves[i].fromRow == selectedRow) {
-                        g.strokeRect(4 + legalMoves[i].toCol*40, 4 + legalMoves[i].toRow*40, 36, 36);
+                for (GekitaiMove legalMove : legalMoves) {
+                    if (legalMove.getFromCol() == selectedCol && legalMove.getFromRow() == selectedRow) {
+                        g.strokeRect(4 + legalMove.getToCol() * 40, 4 + legalMove.getToRow() * 40, 36, 36);
                     }
                 }
             }
@@ -324,8 +324,9 @@ public class CheckersBoard extends Canvas {
      * clicked and call doClickSquare() to handle it.
      */
     public void mousePressed(MouseEvent evt) {
-        if (gameInProgress == false)
+        if (!gameInProgress) {
             message.setText("Click \"New Game\" to start a new game.");
+        }
         else {
             int col = (int)((evt.getX() - 2) / 40);
             int row = (int)((evt.getY() - 2) / 40);

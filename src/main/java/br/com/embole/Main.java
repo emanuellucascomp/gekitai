@@ -19,15 +19,14 @@ import javafx.scene.text.FontWeight;
  * moves, the game ends.
  */
 public class Main extends Application {
+    private GekitaiBoard board;
+    private Button newGameButton;
+    private Button resignButton;
+    private Label message;
 
     public static void main(String[] args) {
         launch(args);
     }
-
-    CheckersBoard board;
-    private Button newGameButton;
-    private Button resignButton;
-    private Label message;
 
     /**
      * The constructor creates the Board (which in turn creates and manages
@@ -40,8 +39,8 @@ public class Main extends Application {
         /* Create the label that will show messages. */
 
         message = new Label("Click \"New Game\" to begin.");
-        message.setTextFill( Color.rgb(100,255,100) ); // Light green.
-        message.setFont( Font.font(null, FontWeight.BOLD, 18) );
+        message.setTextFill(Color.BLACK);
+        message.setFont(Font.font(null, FontWeight.BOLD, 18));
 
         /* Create the buttons and the board.  The buttons MUST be
          * created first, since they are used in the CheckerBoard
@@ -50,7 +49,7 @@ public class Main extends Application {
         newGameButton = new Button("New Game");
         resignButton = new Button("Resign");
 
-        board = new CheckersBoard(message, newGameButton, resignButton); // a subclass of Canvas, defined below
+        board = new GekitaiBoard(message, newGameButton, resignButton); // a subclass of Canvas, defined below
         board.drawBoard();  // draws the content of the checkerboard
 
         /* Set up ActionEvent handlers for the buttons and a MousePressed handler
@@ -83,17 +82,16 @@ public class Main extends Application {
         Pane root = new Pane();
 
         root.setPrefWidth(500);
-        root.setPrefHeight(420);
+        root.setPrefHeight(800);
 
         /* Add the child nodes to the Pane and set up the rest of the GUI */
 
         root.getChildren().addAll(board, newGameButton, resignButton, message);
-        root.setStyle("-fx-background-color: darkgreen; "
-                + "-fx-border-color: darkred; -fx-border-width:3");
+        root.setStyle("-fx-background-color: lightblue; -fx-border-width:3;");
         Scene scene = new Scene(root);
         stage.setScene(scene);
         stage.setResizable(false);
-        stage.setTitle("Checkers!");
+        stage.setTitle("Gekitai");
         stage.show();
 
     }
