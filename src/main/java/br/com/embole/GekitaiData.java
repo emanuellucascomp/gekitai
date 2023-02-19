@@ -81,16 +81,6 @@ public class GekitaiData {
     void makeMove(int fromRow, int fromCol, int toRow, int toCol) {
         board[toRow][toCol] = board[fromRow][fromCol];
         board[fromRow][fromCol] = EMPTY;
-        if (fromRow - toRow == 2 || fromRow - toRow == -2) {
-            // The move is a jump.  Remove the jumped piece from the board.
-            int jumpRow = (fromRow + toRow) / 2;  // Row of the jumped piece.
-            int jumpCol = (fromCol + toCol) / 2;  // Column of the jumped piece.
-            board[jumpRow][jumpCol] = EMPTY;
-        }
-        if (toRow == 0 && board[toRow][toCol] == RED)
-            board[toRow][toCol] = RED_KING;
-        if (toRow == 7 && board[toRow][toCol] == BLACK)
-            board[toRow][toCol] = BLACK_KING;
     }
 
     /**
@@ -231,8 +221,7 @@ public class GekitaiData {
                 return false;  // Regular red piece can only move up.
             return board[r2][c2] == BLACK || board[r2][c2] == BLACK_KING;  // There is no black piece to jump.
 // The jump is legal.
-        }
-        else {
+        } else {
             if (board[r1][c1] == BLACK && r3 < r1)
                 return false;  // Regular black piece can only move downn.
             return board[r2][c2] == RED || board[r2][c2] == RED_KING;  // There is no red piece to jump.
